@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 
 export default function JobPortal() {
 
-  // ✅ Put your backend URL here (TEMP)
-  const API = "https://ai-mern-kl3y.vercel.app/";
+  // ✅ Load users from localStorage OR use default first account
+  const [users, setUsers] = useState(() => {
+    const saved = localStorage.getItem("users");
+    return saved ? JSON.parse(saved) : [{ username: "user", password: "123" }];
+  });
 
   const [view, setView] = useState("login");
   const [username, setUsername] = useState("");
@@ -14,48 +16,53 @@ export default function JobPortal() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const signup = async () => {
+  // ✅ Save users list whenever it changes
+  useEffect(() => {
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
+
+  const signup = () => {
     setErrorMessage("");
-    try {
-      const res = await axios.post(`${API}/auth/signup`, { username, password });
-      alert("Signup successful! Please login.");
-      setView("login");
-    } catch (err) {
-      console.log(err);
+
+    if (users.find((u) => u.username === username)) {
       setErrorMessage("Username already exists.");
+      return;
     }
+
+    const newUser = { username, password };
+    setUsers([...users, newUser]);
+    alert("Signup successful! Please login.");
+    setView("login");
   };
 
-  const login = async () => {
+  const login = () => {
     setErrorMessage("");
-    try {
-      const res = await axios.post(`${API}/auth/login`, { username, password });
-      localStorage.setItem("token", res.data.token);
-      setToken(res.data.token);
-      setView("scanner");
-    } catch (err) {
+    const user = users.find((u) => u.username === username && u.password === password);
+
+    if (!user) {
       setErrorMessage("Invalid username or password.");
+      return;
     }
+
+    const fakeToken = "local-auth-token";
+    localStorage.setItem("token", fakeToken);
+    setToken(fakeToken);
+    setView("scanner");
   };
 
-  const uploadResume = async (e) => {
-    const file = e.target.files[0];
-    const form = new FormData();
-    form.append("resume", file);
-
+  const uploadResume = (e) => {
     setLoading(true);
     setErrorMessage("");
 
-    try {
-      const res = await axios.post(`${API}/resume/upload`, form, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      setMatchedJobs(res.data.matchedJobs);
-    } catch (err) {
-      setErrorMessage("Resume upload failed.");
-    }
-    setLoading(false);
+    setTimeout(() => {
+      // ✅ Static Job Matching Example
+      setMatchedJobs([
+        { title: "Software Engineer" },
+        { title: "Frontend Developer" },
+        { title: "Backend Developer" }
+      ]);
+      setLoading(false);
+    }, 800);
   };
 
   return (
