@@ -21,6 +21,7 @@ export default function JobPortal() {
       alert("Signup successful! Please login.");
       setView("login");
     } catch (err) {
+      console.log(err);
       setErrorMessage("Username already exists.");
     }
   };
