@@ -8,22 +8,26 @@ export default function JobPortal() {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [matchedJobs, setMatchedJobs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Static username and password (for testing/demo purposes)
   const staticUsername = 'user';
   const staticPassword = '123';
 
   const signup = async () => {
-    // Static signup - directly set the username and password to static values
+    // Prevent signup with any credentials other than the static ones
     if (username === staticUsername && password === staticPassword) {
       alert('Account already exists with the static credentials.');
       setView('login');
     } else {
-      alert('Static signup only available with predefined credentials.');
+      alert('Signup only available with predefined credentials (static).');
     }
   };
 
   const login = async () => {
+    // Clear any previous errors
+    setErrorMessage('');
+
     // Check for static username and password
     if (username === staticUsername && password === staticPassword) {
       // Simulate a successful login response with a static token
@@ -32,7 +36,7 @@ export default function JobPortal() {
       setToken(fakeToken);
       setView('scanner');
     } else {
-      alert('Invalid username or password. Please try again.');
+      setErrorMessage('Invalid username or password. Please try again.');
     }
   };
 
@@ -40,8 +44,10 @@ export default function JobPortal() {
     const file = e.target.files[0];
     const form = new FormData();
     form.append('resume', file);
+
     try {
       setLoading(true);
+
       // Simulate a successful resume upload response with static matched jobs
       const res = {
         data: {
@@ -52,9 +58,10 @@ export default function JobPortal() {
           ]
         }
       };
+
       setMatchedJobs(res.data.matchedJobs);
     } catch (error) {
-      alert('Failed to upload resume. Please try again.');
+      setErrorMessage('Failed to upload resume. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -65,42 +72,47 @@ export default function JobPortal() {
       {view === 'login' && (
         <>
           <h1>Job Portal</h1>
-          <input 
-            placeholder="Username" 
-            onChange={(e) => setUsername(e.target.value)} 
-            value={username} 
+          <input
+            placeholder="Username"
+            onChange={(e) => setUsername(e.target.value)}
+            value={username}
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            onChange={(e) => setPassword(e.target.value)} 
+          <input
+            type="password"
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
             value={password}
           />
           <button onClick={login} disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
-          <p className="toggle" onClick={() => setView('signup')}>Don't have an account? Sign Up</p>
+          {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+          <p className="toggle" onClick={() => setView('signup')}>
+            Don't have an account? Sign Up
+          </p>
         </>
       )}
 
       {view === 'signup' && (
         <>
           <h1>Create Account</h1>
-          <input 
-            placeholder="Username" 
-            onChange={(e) => setUsername(e.target.value)} 
+          <input
+            placeholder="Username"
+            onChange={(e) => setUsername(e.target.value)}
             value={username}
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            onChange={(e) => setPassword(e.target.value)} 
+          <input
+            type="password"
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
             value={password}
           />
           <button onClick={signup} disabled={loading}>
             {loading ? 'Signing up...' : 'Sign Up'}
           </button>
-          <p className="toggle" onClick={() => setView('login')}>Already have an account? Login</p>
+          <p className="toggle" onClick={() => setView('login')}>
+            Already have an account? Login
+          </p>
         </>
       )}
 
@@ -108,6 +120,7 @@ export default function JobPortal() {
         <>
           <h2>Upload Resume</h2>
           <input type="file" onChange={uploadResume} />
+          {loading && <p>Loading...</p>}
           <h2>Matched Jobs</h2>
           <ul className="jobs-list">
             {matchedJobs.map((job, i) => (
