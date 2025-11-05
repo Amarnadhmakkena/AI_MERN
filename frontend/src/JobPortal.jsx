@@ -1,56 +1,106 @@
-
-import React, { useState } from 'react'
-import axios from 'axios'
+import React, { useState } from 'react';
+import axios from 'axios';
 
 export default function JobPortal() {
-  const [view, setView] = useState('login')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [token, setToken] = useState(localStorage.getItem('token') || '')
-  const [matchedJobs, setMatchedJobs] = useState([])
+  const [view, setView] = useState('login');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [matchedJobs, setMatchedJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Static username and password (for testing/demo purposes)
+  const staticUsername = 'user';
+  const staticPassword = '123';
 
   const signup = async () => {
-    await axios.post('http://localhost:5000/auth/signup', { username, password })
-    alert('Account created! Please login.')
-    setView('login')
-  }
+    // Static signup - directly set the username and password to static values
+    if (username === staticUsername && password === staticPassword) {
+      alert('Account already exists with the static credentials.');
+      setView('login');
+    } else {
+      alert('Static signup only available with predefined credentials.');
+    }
+  };
 
   const login = async () => {
-    const res = await axios.post('http://localhost:5000/auth/login', { username, password })
-    localStorage.setItem('token', res.data.token)
-    setToken(res.data.token)
-    setView('scanner')
-  }
+    // Check for static username and password
+    if (username === staticUsername && password === staticPassword) {
+      // Simulate a successful login response with a static token
+      const fakeToken = 'fake-jwt-token';
+      localStorage.setItem('token', fakeToken);
+      setToken(fakeToken);
+      setView('scanner');
+    } else {
+      alert('Invalid username or password. Please try again.');
+    }
+  };
 
   const uploadResume = async (e) => {
-    const file = e.target.files[0]
-    const form = new FormData()
-    form.append('resume', file)
-    const res = await axios.post('http://localhost:5000/resume/upload', form, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    setMatchedJobs(res.data.matchedJobs)
-  }
+    const file = e.target.files[0];
+    const form = new FormData();
+    form.append('resume', file);
+    try {
+      setLoading(true);
+      // Simulate a successful resume upload response with static matched jobs
+      const res = {
+        data: {
+          matchedJobs: [
+            { title: 'Software Engineer' },
+            { title: 'Frontend Developer' },
+            { title: 'Backend Developer' }
+          ]
+        }
+      };
+      setMatchedJobs(res.data.matchedJobs);
+    } catch (error) {
+      alert('Failed to upload resume. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="container">
       {view === 'login' && (
         <>
           <h1>Job Portal</h1>
-          <input placeholder="Username" onChange={e=>setUsername(e.target.value)} />
-          <input type="password" placeholder="Password" onChange={e=>setPassword(e.target.value)} />
-          <button onClick={login}>Login</button>
-          <p className="toggle" onClick={()=>setView('signup')}>Don't have an account? Sign Up</p>
+          <input 
+            placeholder="Username" 
+            onChange={(e) => setUsername(e.target.value)} 
+            value={username} 
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            onChange={(e) => setPassword(e.target.value)} 
+            value={password}
+          />
+          <button onClick={login} disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+          <p className="toggle" onClick={() => setView('signup')}>Don't have an account? Sign Up</p>
         </>
       )}
 
       {view === 'signup' && (
         <>
           <h1>Create Account</h1>
-          <input placeholder="Username" onChange={e=>setUsername(e.target.value)} />
-          <input type="password" placeholder="Password" onChange={e=>setPassword(e.target.value)} />
-          <button onClick={signup}>Sign Up</button>
-          <p className="toggle" onClick={()=>setView('login')}>Already have an account? Login</p>
+          <input 
+            placeholder="Username" 
+            onChange={(e) => setUsername(e.target.value)} 
+            value={username}
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            onChange={(e) => setPassword(e.target.value)} 
+            value={password}
+          />
+          <button onClick={signup} disabled={loading}>
+            {loading ? 'Signing up...' : 'Sign Up'}
+          </button>
+          <p className="toggle" onClick={() => setView('login')}>Already have an account? Login</p>
         </>
       )}
 
@@ -60,14 +110,12 @@ export default function JobPortal() {
           <input type="file" onChange={uploadResume} />
           <h2>Matched Jobs</h2>
           <ul className="jobs-list">
-            {matchedJobs.map((job,i)=>(
-              <li key={i}>
-                {job.title}
-              </li>
+            {matchedJobs.map((job, i) => (
+              <li key={i}>{job.title}</li>
             ))}
           </ul>
         </>
       )}
     </div>
-  )
+  );
 }
