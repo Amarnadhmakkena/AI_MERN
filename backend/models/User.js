@@ -1,0 +1,1 @@
+const m=require('mongoose');module.exports=m.model('User',new m.Schema({username:String,password:String}));

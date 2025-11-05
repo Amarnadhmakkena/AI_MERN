@@ -1,0 +1,1 @@
+const m=require('mongoose');module.exports=m.model('Job',new m.Schema({title:String,keywords:[String]}));

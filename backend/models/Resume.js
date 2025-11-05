@@ -1,0 +1,1 @@
+const m=require('mongoose');module.exports=m.model('Resume',new m.Schema({originalName:String,storedFilename:String}));

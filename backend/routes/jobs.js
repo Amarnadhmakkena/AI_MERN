@@ -1,0 +1,1 @@
+const r=require('express').Router(),J=require('../models/Job');r.get('/',async(req,res)=>res.json(await J.find()));module.exports=r;

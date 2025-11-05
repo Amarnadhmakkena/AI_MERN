@@ -1,0 +1,1 @@
+const r=require('express').Router();r.post('/upload',(req,res)=>res.json([]));module.exports=r;
